@@ -33,7 +33,7 @@ interface LeadItem {
   collection_type: string;
   description: string;
   estimated_value?: string | number | null;
-  images?: string[] | null;
+  images_json?: string | null; // Changed from images to match DB
   source?: string | null;
   status?: string | null;
 }
@@ -109,57 +109,48 @@ const Admin = () => {
 
   // Reload helpers so actions can refresh current view
   const reloadLeads = useCallback(async () => {
+    if (!supabase) return;
     try {
       setLeadError("");
-      const res = await fetch(`/api/leads?status=${leadFilter}`);
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(`GET /api/leads failed (${res.status}): ${txt}`);
+      let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
+      if (leadFilter !== 'all') {
+        query = query.eq('status', leadFilter);
       }
-      const json = await res.json().catch(() => ({}));
-      if (json?.success && Array.isArray(json.data)) {
-        setLeads(json.data as LeadItem[]);
-      } else {
-        throw new Error(json?.message || "Unexpected response for leads");
-      }
+      const { data, error } = await query;
+      if (error) throw error;
+      setLeads(data as LeadItem[]);
     } catch (e: any) {
       setLeadError(String(e?.message || e || 'Failed to load leads'));
     }
   }, [leadFilter]);
 
   const reloadContacts = useCallback(async () => {
+    if (!supabase) return;
     try {
       setContactError("");
-      const res = await fetch(`/api/contacts?status=${contactFilter}`);
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(`GET /api/contacts failed (${res.status}): ${txt}`);
+      let query = supabase.from('contacts').select('*').order('created_at', { ascending: false });
+      if (contactFilter !== 'all') {
+        query = query.eq('status', contactFilter);
       }
-      const json = await res.json().catch(() => ({}));
-      if (json?.success && Array.isArray(json.data)) {
-        setContacts(json.data as ContactItem[]);
-      } else {
-        throw new Error(json?.message || "Unexpected response for contacts");
-      }
+      const { data, error } = await query;
+      if (error) throw error;
+      setContacts(data as ContactItem[]);
     } catch (e: any) {
       setContactError(String(e?.message || e || 'Failed to load contacts'));
     }
   }, [contactFilter]);
 
   const reloadApplications = useCallback(async () => {
+    if (!supabase) return;
     try {
       setApplicationError("");
-      const res = await fetch(`/api/applications?status=${applicationFilter}`);
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(`GET /api/applications failed (${res.status}): ${txt}`);
+      let query = supabase.from('applications').select('*').order('created_at', { ascending: false });
+      if (applicationFilter !== 'all') {
+        query = query.eq('status', applicationFilter);
       }
-      const json = await res.json().catch(() => ({}));
-      if (json?.success && Array.isArray(json.data)) {
-        setApplications(json.data as ApplicationItem[]);
-      } else {
-        throw new Error(json?.message || "Unexpected response for applications");
-      }
+      const { data, error } = await query;
+      if (error) throw error;
+      setApplications(data as ApplicationItem[]);
     } catch (e: any) {
       setApplicationError(String(e?.message || e || 'Failed to load applications'));
     }
@@ -189,80 +180,46 @@ const Admin = () => {
     const stored = storedRaw ? JSON.parse(storedRaw) : [];
     setPosts(stored);
 
-    const loadLeads = async (status: 'active' | 'archived' | 'all' = 'active') => {
-      if (localMode) {
-        try {
-          setLeadError("");
-          const res = await fetch(`/api/leads?status=${status}`);
-          if (!res.ok) {
-            const txt = await res.text().catch(() => "");
-            throw new Error(`GET /api/leads failed (${res.status}): ${txt}`);
-          }
-          const json = await res.json();
-          if (json?.success && Array.isArray(json.data)) setLeads(json.data as LeadItem[]);
-          else throw new Error(json?.message || "Unexpected response for leads");
-        } catch (e: any) { setLeadError(String(e?.message || e || 'Failed to load leads')); }
-        return;
-      }
-      if (supabase) {
-        const { data, error } = await supabase
-          .from('leads')
-          .select('*') // For Supabase mode: optionally filter client-side by status
-          .order('created_at', { ascending: false });
-        if (!error && Array.isArray(data)) {
-          const arr = data as unknown as LeadItem[];
-          const filtered = status === 'all' ? arr : arr.filter((l) => (status === 'archived' ? (l.status === 'archived') : (l.status !== 'archived')));
-          setLeads(filtered);
-        } else if (error) { setLeadError(error.message || 'Failed to load leads'); }
-      }
-    };
-    loadLeads(leadFilter);
+    // Load data from Supabase
+    if (session || localMode) {
+      reloadLeads();
+      reloadContacts();
+      reloadApplications();
+    }
 
-    // Load contacts from local API
-    const loadContacts = async (status: 'active' | 'archived' | 'all' = 'active') => {
-      try {
-        setContactError("");
-        const res = await fetch(`/api/contacts?status=${status}`);
-        if (!res.ok) {
-          const txt = await res.text().catch(() => "");
-          throw new Error(`GET /api/contacts failed (${res.status}): ${txt}`);
-        }
-        const json = await res.json();
-        if (json?.success && Array.isArray(json.data)) setContacts(json.data as ContactItem[]);
-        else throw new Error(json?.message || "Unexpected response for contacts");
-      } catch (e: any) { setContactError(String(e?.message || e || 'Failed to load contacts')); }
-    };
-    loadContacts(contactFilter);
-
-    reloadApplications();
-    // reloadSubscribers();
-
-    // Realtime: subscribe to new leads
+    // Realtime: subscribe to new leads, contacts, applications
     if (!localMode && supabase) {
-      const channel = supabase
+      const leadChanges = supabase
         .channel('leads-changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, (payload) => {
-          const newLead = payload.new as unknown as LeadItem;
-          setLeads((prev) => [newLead, ...prev]);
-        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => reloadLeads())
+        .subscribe();
+      const contactChanges = supabase
+        .channel('contacts-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'contacts' }, () => reloadContacts())
+        .subscribe();
+      const applicationChanges = supabase
+        .channel('applications-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () => reloadApplications())
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(leadChanges);
+        supabase.removeChannel(contactChanges);
+        supabase.removeChannel(applicationChanges);
       };
     }
-  }, [leadFilter, contactFilter, applicationFilter]);
+  }, [session, localMode, leadFilter, contactFilter, applicationFilter, reloadLeads, reloadContacts, reloadApplications]);
 
   const updateStatus = async (type: 'leads' | 'contacts' | 'applications', id: number | string, status: 'active' | 'archived') => {
-    const endpoint = `/api/${type}/${id}/${status === 'active' ? 'restore' : 'archive'}`;
     const entityName = type.slice(0, -1);
     try {
       if (!confirm(`Are you sure you want to ${status === 'active' ? 'restore' : 'archive'} this ${entityName}?`)) return;
       toast({ title: `Updating ${entityName}...`, description: `#${id}` });
-      const res = await fetch(endpoint, { method: 'POST' });
-      const txt = await res.text().catch(() => '');
-      const json = txt ? JSON.parse(txt) : {};
-      if (!res.ok || json?.success === false) throw new Error(json?.message || `Update failed (${res.status}): ${txt}`);
+
+      // NEW: Update Supabase directly
+      if (!supabase) throw new Error('Supabase client not available');
+      const { error } = await supabase.from(type).update({ status }).eq('id', id);
+      if (error) throw error;
       
       toast({ title: `${entityName.charAt(0).toUpperCase() + entityName.slice(1)} updated`, description: `#${id} moved to ${status}` });
 
@@ -720,13 +677,24 @@ const Admin = () => {
                   <div className="text-muted-foreground">No {leadFilter === 'all' ? '' : leadFilter} leads found.</div>
                 ) : (
                   <ul className="divide-y divide-white/10">
-                    {leads.map((l) => (
+                    {leads.map((l) => {
+                      const images = l.images_json ? JSON.parse(l.images_json) : [];
+                      return (
                       <li key={l.id} className="py-4">
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
                             <div className="font-semibold truncate">{l.name}</div>
                             <div className="text-sm text-muted-foreground truncate">{l.email} • {new Date(l.created_at).toLocaleString()}</div>
                             <p className="mt-2 whitespace-pre-wrap leading-relaxed text-sm">{l.description}</p>
+                            {images.length > 0 && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {images.map((img: string, i: number) => (
+                                  <a href={img} key={i} target="_blank" rel="noopener noreferrer">
+                                    <img src={img} alt={`lead-${l.id}-img-${i}`} className="w-20 h-20 object-cover rounded-md border border-white/10" />
+                                  </a>
+                                ))}
+                              </div>
+                            )}
                           </div>
                           <div className="shrink-0">
                             {l.status === 'archived' || leadFilter === 'archived' ? (
@@ -736,13 +704,13 @@ const Admin = () => {
                             ) : (
                               <Button
                                 variant="outline"
-                                type="button"
                                 onClick={() => updateStatus('leads', l.id, 'archived')}>Archive</Button>
                             )}
                           </div>
                         </div>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 )}
               </div>

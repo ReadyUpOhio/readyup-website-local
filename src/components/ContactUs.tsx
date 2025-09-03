@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import supabase from '@/lib/supabaseClient'; // Import Supabase client
 
 const ContactUs: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
@@ -20,13 +21,13 @@ const ContactUs: React.FC = () => {
     setSubmitting(true);
     setMessage({ type: 'info', text: 'Sending…' });
     try {
-      const res = await fetch('/api/contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, message: form.message })
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.success) throw new Error(data?.message || 'Failed to send');
+      // NEW: Insert into Supabase 'contacts' table
+      const { error } = await supabase
+        .from('contacts')
+        .insert([{ name: form.name, email: form.email, message: form.message }]);
+
+      if (error) throw error;
+
       setMessage({ type: 'success', text: 'Thanks! We received your message and will reply shortly.' });
       setForm({ name: '', email: '', message: '' });
     } catch (err: any) {

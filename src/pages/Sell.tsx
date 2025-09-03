@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Camera, DollarSign, MessageCircle, X } from "lucide-react";
+import supabase from '@/lib/supabaseClient'; // Import Supabase client
 
 const SellPage = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -65,22 +66,18 @@ const SellPage = () => {
       const payload = {
         name: formData.name,
         email: formData.email,
-        phone: formData.phone || '',
+        phone: formData.phone || null,
         collection_type: formData.collectionType,
         description: formData.description,
-        estimated_value: formData.estimatedValue || '',
-        images: (uploadedImages || []).slice(0, 6),
+        estimated_value: formData.estimatedValue || null,
+        images_json: JSON.stringify((uploadedImages || []).slice(0, 6)), // Store images as JSON string
         source: 'sell_form',
       };
-      const res = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.message || 'Form submission failed');
-      }
+
+      // NEW: Insert into Supabase 'leads' table
+      const { error } = await supabase.from('leads').insert([payload]);
+      if (error) throw error;
+
       setSubmitMessage({ type: 'success', text: 'Thank you! Your request was submitted. We\'ll contact you within 24 hours with an offer.' });
       setUploadedImages([]);
       setFormData({ name: '', email: '', phone: '', collectionType: '', description: '', estimatedValue: '' });
