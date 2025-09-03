@@ -40,19 +40,19 @@ To get a local copy up and running, follow these simple steps.
 
 ### Running the Application
 
-This project consists of two main parts: the frontend Vite server and the backend Express server. You will need to run both concurrently in separate terminals.
+This project was bootstrapped with [Vite](https://vitejs.dev/).
 
-1.  **Start the backend server:**
-    ```sh
-    npm run server
-    ```
-    The backend will run on `http://localhost:5175`.
+---
 
-2.  **Start the frontend development server:**
-    ```sh
-    npm run dev
-    ```
-    The frontend will be available at `http://localhost:8080`.
+_This line was added to trigger a fresh Cloudflare deployment._
+
+To run the application locally, start the frontend development server:
+
+```sh
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`.
 
 ## Available Scripts
 
@@ -60,7 +60,6 @@ This project consists of two main parts: the frontend Vite server and the backen
 - `npm run build`: Builds the application for production.
 - `npm run lint`: Lints the codebase using ESLint.
 - `npm run preview`: Previews the production build locally.
-- `npm run server`: Starts the backend Express server.
 
 ## Database
 
