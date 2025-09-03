@@ -1,0 +1,80 @@
+[
+  {
+    "id": 1,
+    "title": "The Ultimate Guide to Building Your First Gaming PC",
+    "excerpt": "Everything you need to know about selecting components, assembly tips, and optimizing performance for the best gaming experience.",
+    "author": "Alex Chen",
+    "date": "2024-03-15",
+    "readTime": "12 min",
+    "category": "guides",
+    "image": "/api/placeholder/600/400",
+    "views": 15420,
+    "comments": 89,
+    "tags": ["PC Building", "Hardware", "Beginner Guide"]
+  },
+  {
+    "id": 2,
+    "title": "Cyberpunk Odyssey Review: A Journey Through Neon Dreams",
+    "excerpt": "Our in-depth review of the latest cyberpunk adventure that's taking the gaming world by storm. Is it worth the hype?",
+    "author": "Sarah Kim",
+    "date": "2024-03-12",
+    "readTime": "8 min",
+    "category": "reviews",
+    "image": "/api/placeholder/600/400",
+    "views": 8750,
+    "comments": 156,
+    "tags": ["Review", "Cyberpunk", "Action RPG"]
+  },
+  {
+    "id": 3,
+    "title": "Top 10 Indie Games You Need to Play This Month",
+    "excerpt": "Discover hidden gems from independent developers that offer unique gameplay experiences and innovative storytelling.",
+    "author": "Mike Rodriguez",
+    "date": "2024-03-10",
+    "readTime": "6 min",
+    "category": "news",
+    "image": "/api/placeholder/600/400",
+    "views": 12340,
+    "comments": 67,
+    "tags": ["Indie Games", "Recommendations", "Monthly Picks"]
+  },
+  {
+    "id": 4,
+    "title": "Community Spotlight: Player-Created Tournaments",
+    "excerpt": "Meet the passionate community members organizing incredible tournaments and bringing gamers together from around the world.",
+    "author": "Emma Johnson",
+    "date": "2024-03-08",
+    "readTime": "5 min",
+    "category": "community",
+    "image": "/api/placeholder/600/400",
+    "views": 6890,
+    "comments": 43,
+    "tags": ["Community", "Tournaments", "Esports"]
+  },
+  {
+    "id": 5,
+    "title": "Mastering Strategy Games: Advanced Tactics for Victory",
+    "excerpt": "Take your strategy gaming to the next level with these advanced techniques used by professional players and tournament winners.",
+    "author": "David Park",
+    "date": "2024-03-05",
+    "readTime": "15 min",
+    "category": "guides",
+    "image": "/api/placeholder/600/400",
+    "views": 9650,
+    "comments": 78,
+    "tags": ["Strategy", "Advanced Tips", "Pro Gaming"]
+  },
+  {
+    "id": 6,
+    "title": "The Evolution of RPGs: From Dungeons to Digital Worlds",
+    "excerpt": "A nostalgic journey through the history of role-playing games and how they've shaped modern gaming culture.",
+    "author": "Lisa Zhang",
+    "date": "2024-03-03",
+    "readTime": "10 min",
+    "category": "news",
+    "image": "/api/placeholder/600/400",
+    "views": 11230,
+    "comments": 92,
+    "tags": ["RPG", "Gaming History", "Evolution"]
+  }
+]

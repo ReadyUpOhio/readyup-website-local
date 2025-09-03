@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "Alex Collector",
+    "email": "alex@example.com",
+    "subject": "Trade inquiry",
+    "message": "I have a small lot of SNES cartridges I'd like to trade at the next event.",
+    "receivedAt": "2025-08-31T18:32:00-04:00"
+  },
+  {
+    "id": 2,
+    "name": "Jamie",
+    "email": "jamie@example.com",
+    "subject": "Store hours",
+    "message": "Are you open on Labor Day?",
+    "receivedAt": "2025-08-30T11:05:00-04:00"
+  }
+]
