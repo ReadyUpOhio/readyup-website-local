@@ -62,11 +62,65 @@ This project consists of two main parts: the frontend Vite server and the backen
 - `npm run preview`: Previews the production build locally.
 - `npm run server`: Starts the backend Express server.
 
-## Database Schema
+## Database
 
-The application uses a local SQLite database (`data/app.sqlite`) for storing leads and contact messages. The schema is defined in `server/db.ts`.
+The application uses two databases:
 
-### `leads` table
+-   **Supabase**: Handles user authentication, contact form submissions, and job applications.
+-   **SQLite**: A local database (`data/app.sqlite`) used for storing leads from the "Sell Your Collection" form.
+
+### Supabase Schema
+
+The following tables are managed in Supabase. You can create them using the SQL queries provided in the project setup or in the Supabase SQL Editor.
+
+#### `contacts` table
+
+Stores messages from the "Contact Us" form.
+
+| Column     | Type                  | Description                       |
+| ---------- | --------------------- | --------------------------------- |
+| `id`       | `bigint` (Primary Key)| Unique identifier for the contact |
+| `created_at` | `timestamp with time zone` | Timestamp of creation             |
+| `name`     | `text`                | Name of the person contacting     |
+| `email`    | `text`                | Email of the person contacting    |
+| `message`  | `text`                | The message content               |
+| `status`   | `text`                | 'active' or 'archived'            |
+
+#### `applications` table
+
+Stores job applications from the "Careers" page.
+
+| Column                 | Type                  | Description                               |
+| ---------------------- | --------------------- | ----------------------------------------- |
+| `id`                   | `bigint` (Primary Key)| Unique identifier for the application     |
+| `created_at`           | `timestamp with time zone` | Timestamp of submission                   |
+| `name`                 | `text`                | Applicant's full name                     |
+| `email`                | `text`                | Applicant's email                         |
+| `phone`                | `text`                | Applicant's phone number                  |
+| `position`             | `text`                | Position applied for                      |
+| `cover_letter`         | `text`                | Cover letter content                      |
+| `resume_name`          | `text`                | Filename of the uploaded resume           |
+| `resume_data_url`      | `text`                | Base64 encoded resume data                |
+| `address`              | `text`                | Applicant's street address                |
+| `city`                 | `text`                | Applicant's city                          |
+| `state`                | `text`                | Applicant's state                         |
+| `zip`                  | `text`                | Applicant's postal code                   |
+| `start_date`           | `text`                | Desired start date                        |
+| `desired_pay`          | `text`                | Desired compensation                      |
+| `availability_type`    | `text`                | e.g., 'Full-time', 'Part-time'            |
+| `hours_per_week`       | `text`                | Available hours per week                  |
+| `work_auth`            | `text`                | Work authorization status                 |
+| `over_18`              | `text`                | Confirmation of being over 18             |
+| `has_transport`        | `text`                | Confirmation of reliable transportation   |
+| `website`, `linkedin`, etc. | `text`           | Links to professional profiles            |
+| `consent`              | `boolean`             | Consent to terms                          |
+| `status`               | `text`                | 'active' or 'archived'                    |
+
+### Local SQLite Schema
+
+The schema for the local database is defined in `server/db.ts`.
+
+#### `leads` table
 
 | Column            | Type    | Description                               |
 | ----------------- | ------- | ----------------------------------------- |
@@ -81,15 +135,3 @@ The application uses a local SQLite database (`data/app.sqlite`) for storing lea
 | `images_json`     | TEXT    | JSON array of image URLs                  |
 | `source`          | TEXT    | Source of the lead (e.g., 'sell_form')    |
 | `status`          | TEXT    | 'active' or 'archived'                    |
-
-### `contacts` table
-
-| Column       | Type    | Description                   |
-| ------------ | ------- | ----------------------------- |
-| `id`         | INTEGER | Primary Key                   |
-| `created_at` | TEXT    | Timestamp of creation         |
-| `name`       | TEXT    | Name of the contact           |
-| `email`      | TEXT    | Email of the contact          |
-| `message`    | TEXT    | The message from the contact  |
-| `status`     | TEXT    | 'active' or 'archived'        |
-
