@@ -48,7 +48,6 @@ export interface ApplicationFull {
 
 interface ApplicationViewerProps {
   application: ApplicationFull | null;
-  isOpen: boolean;
   onClose: () => void;
 }
 
@@ -62,7 +61,9 @@ const DetailItem = ({ label, value }: { label: string; value?: string | number |
   );
 };
 
-export const ApplicationViewer = ({ application, isOpen, onClose }: ApplicationViewerProps) => {
+export const ApplicationViewer = ({ application, onClose }: ApplicationViewerProps) => {
+  const isOpen = !!application;
+
   if (!application) return null;
 
   return (
@@ -116,6 +117,12 @@ export const ApplicationViewer = ({ application, isOpen, onClose }: ApplicationV
               </a>
             </div>
           )}
+
+          <div className="col-span-full">
+            <h3 className="text-lg font-semibold mt-4 mb-2">References</h3>
+            <DetailItem label="Reference Name" value={application.reference_name} />
+            <DetailItem label="Reference Phone" value={application.reference_phone} />
+          </div>
 
           <div className="col-span-full">
             <h3 className="text-lg font-semibold mt-4 mb-2">Additional Info</h3>

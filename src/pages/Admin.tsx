@@ -507,7 +507,7 @@ const Admin = () => {
         <div className="container mx-auto max-w-5xl">
           <h1 className="text-4xl font-bold font-orbitron mt-8 mb-6 bg-gradient-to-r from-space-blue to-space-cyan bg-clip-text text-transparent">Admin Portal</h1>
           <div className="flex items-center justify-between mb-8">
-            <p className="text-muted-foreground">Manage blog posts and review incoming messages. Blogs are stored locally for now.</p>
+            <p className="text-muted-foreground">Manage blog posts, leads, contacts, and applications.</p>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{userEmail}</span>
               <Button variant="outline" size="sm" onClick={() => supabase?.auth.signOut()}>Sign Out</Button>
@@ -520,7 +520,6 @@ const Admin = () => {
               <TabsTrigger value="leads">Leads</TabsTrigger>
               <TabsTrigger value="contacts">Contacts</TabsTrigger>
               <TabsTrigger value="applications">Applications</TabsTrigger>
-              {/* <TabsTrigger value="subscribers">Subscribers</TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="blogs" className="space-y-8">
@@ -655,7 +654,7 @@ const Admin = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="leads" className="pointer-events-auto">
+            <TabsContent value="leads">
               <div className="p-6 rounded-2xl">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-bold font-orbitron">Leads</h2>
@@ -668,11 +667,7 @@ const Admin = () => {
                     <Button variant="outline" onClick={reloadLeads}>Refresh</Button>
                   </div>
                 </div>
-                {leadError && (
-                  <div className="mb-3 text-sm text-red-400 bg-red-950/40 border border-red-500/30 rounded p-2">
-                    {leadError}
-                  </div>
-                )}
+                {leadError && <div className="mb-3 text-sm text-red-400 bg-red-950/40 border border-red-500/30 rounded p-2">{leadError}</div>}
                 {leads.length === 0 ? (
                   <div className="text-muted-foreground">No {leadFilter === 'all' ? '' : leadFilter} leads found.</div>
                 ) : (
@@ -698,19 +693,56 @@ const Admin = () => {
                           </div>
                           <div className="shrink-0">
                             {l.status === 'archived' || leadFilter === 'archived' ? (
-                              <Button
-                                variant="secondary"
-                                onClick={() => updateStatus('leads', l.id, 'active')}>Restore</Button>
+                              <Button variant="secondary" onClick={() => updateStatus('leads', l.id, 'active')}>Restore</Button>
                             ) : (
-                              <Button
-                                variant="outline"
-                                onClick={() => updateStatus('leads', l.id, 'archived')}>Archive</Button>
+                              <Button variant="outline" onClick={() => updateStatus('leads', l.id, 'archived')}>Archive</Button>
                             )}
                           </div>
                         </div>
                       </li>
                       );
                     })}
+                  </ul>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="contacts">
+              <div className="p-6 rounded-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold font-orbitron">Contacts</h2>
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex rounded-md border border-white/10 overflow-hidden">
+                      <button className={`px-3 py-1 text-sm ${contactFilter === 'active' ? 'bg-white/10' : ''}`} onClick={() => setContactFilter('active')} type="button">Active</button>
+                      <button className={`px-3 py-1 text-sm border-l border-white/10 ${contactFilter === 'archived' ? 'bg-white/10' : ''}`} onClick={() => setContactFilter('archived')} type="button">Archived</button>
+                      <button className={`px-3 py-1 text-sm border-l border-white/10 ${contactFilter === 'all' ? 'bg-white/10' : ''}`} onClick={() => setContactFilter('all')} type="button">All</button>
+                    </div>
+                    <Button variant="outline" onClick={reloadContacts}>Refresh</Button>
+                  </div>
+                </div>
+                {contactError && <div className="mb-3 text-sm text-red-400 bg-red-950/40 border border-red-500/30 rounded p-2">{contactError}</div>}
+                {contacts.length === 0 ? (
+                  <div className="text-muted-foreground">No {contactFilter === 'all' ? '' : contactFilter} contacts found.</div>
+                ) : (
+                  <ul className="divide-y divide-white/10">
+                    {contacts.map((c) => (
+                      <li key={c.id} className="py-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="font-semibold truncate">{c.name}</div>
+                            <div className="text-sm text-muted-foreground truncate">{c.email} • {new Date(c.created_at).toLocaleString()}</div>
+                            <p className="mt-2 whitespace-pre-wrap leading-relaxed text-sm">{c.message}</p>
+                          </div>
+                          <div className="shrink-0">
+                            {c.status === 'archived' || contactFilter === 'archived' ? (
+                              <Button variant="secondary" onClick={() => updateStatus('contacts', c.id, 'active')}>Restore</Button>
+                            ) : (
+                              <Button variant="outline" onClick={() => updateStatus('contacts', c.id, 'archived')}>Archive</Button>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
                   </ul>
                 )}
               </div>
@@ -729,80 +761,24 @@ const Admin = () => {
                     <Button variant="outline" onClick={reloadApplications}>Refresh</Button>
                   </div>
                 </div>
-                {applicationError && (
-                  <div className="mb-3 text-sm text-red-400 bg-red-950/40 border border-red-500/30 rounded p-2">
-                    {applicationError}
-                  </div>
-                )}
+                {applicationError && <div className="mb-3 text-sm text-red-400 bg-red-950/40 border border-red-500/30 rounded p-2">{applicationError}</div>}
                 {applications.length === 0 ? (
                   <div className="text-muted-foreground">No {applicationFilter === 'all' ? '' : applicationFilter} applications found.</div>
                 ) : (
                   <ul className="divide-y divide-white/10">
                     {applications.map((app) => (
-                      <li key={app.id} className="py-4 cursor-pointer hover:bg-white/5 px-4 -mx-4 rounded-lg" onClick={() => setViewingApplication(app)}>
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <div className="font-semibold truncate">{app.name}</div>
-                            <div className="text-sm text-muted-foreground truncate">{app.email} • {app.position}</div>
-                            <p className="mt-2 whitespace-pre-wrap leading-relaxed text-sm line-clamp-2">{app.cover_letter || 'No cover letter.'}</p>
-                          </div>
-                          <div className="shrink-0">
-                            {app.status === 'archived' || applicationFilter === 'archived' ? (
-                              <Button variant="secondary" onClick={(e) => { e.stopPropagation(); updateStatus('applications', app.id, 'active'); }}>Restore</Button>
-                            ) : (
-                              <Button variant="outline" onClick={(e) => { e.stopPropagation(); updateStatus('applications', app.id, 'archived'); }}>Archive</Button>
-                            )}
-                          </div>
+                      <li key={app.id} className="py-4 flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="font-semibold truncate">{app.name}</div>
+                          <div className="text-sm text-muted-foreground truncate">{app.position} • {new Date(app.created_at).toLocaleString()}</div>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="contacts" className="pointer-events-auto">
-              <div className="p-6 rounded-2xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold font-orbitron">Contacts</h2>
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex rounded-md border border-white/10 overflow-hidden">
-                      <button className={`px-3 py-1 text-sm ${contactFilter === 'active' ? 'bg-white/10' : ''}`} onClick={() => setContactFilter('active')} type="button">Active</button>
-                      <button className={`px-3 py-1 text-sm border-l border-white/10 ${contactFilter === 'archived' ? 'bg-white/10' : ''}`} onClick={() => setContactFilter('archived')} type="button">Archived</button>
-                      <button className={`px-3 py-1 text-sm border-l border-white/10 ${contactFilter === 'all' ? 'bg-white/10' : ''}`} onClick={() => setContactFilter('all')} type="button">All</button>
-                    </div>
-                    <Button variant="outline" onClick={reloadContacts}>Refresh</Button>
-                  </div>
-                </div>
-                {contactError && (
-                  <div className="mb-3 text-sm text-red-400 bg-red-950/40 border border-red-500/30 rounded p-2">
-                    {contactError}
-                  </div>
-                )}
-                {contacts.length === 0 ? (
-                  <div className="text-muted-foreground">No {contactFilter === 'all' ? '' : contactFilter} contacts found.</div>
-                ) : (
-                  <ul className="divide-y divide-white/10">
-                    {contacts.map((c) => (
-                      <li key={c.id} className="py-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <div className="font-semibold truncate">{c.name}</div>
-                            <div className="text-sm text-muted-foreground truncate">{c.email} • {new Date(c.created_at).toLocaleString()}</div>
-                            <p className="mt-2 whitespace-pre-wrap leading-relaxed text-sm">{c.message}</p>
-                          </div>
-                          <div className="shrink-0">
-                            {c.status === 'archived' || contactFilter === 'archived' ? (
-                              <Button
-                                variant="secondary"
-                                onClick={() => updateStatus('contacts', c.id, 'active')}>Restore</Button>
-                            ) : (
-                              <Button
-                                variant="outline"
-                                type="button"
-                                onClick={() => updateStatus('contacts', c.id, 'archived')}>Archive</Button>
-                            )}
-                          </div>
+                        <div className="shrink-0 flex gap-2">
+                          <Button variant="secondary" onClick={() => setViewingApplication(app)}>View</Button>
+                          {app.status === 'archived' || applicationFilter === 'archived' ? (
+                            <Button variant="secondary" onClick={() => updateStatus('applications', app.id, 'active')}>Restore</Button>
+                          ) : (
+                            <Button variant="outline" onClick={() => updateStatus('applications', app.id, 'archived')}>Archive</Button>
+                          )}
                         </div>
                       </li>
                     ))}
@@ -824,22 +800,21 @@ const Admin = () => {
                   ✕
                 </Button>
                 <div className="rounded-2xl overflow-hidden border border-white/20 bg-black">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={previewImage} alt="Preview" className="w-full max-h-[80vh] object-contain" />
                 </div>
               </div>
             </div>
           )}
+
         </div>
       </main>
+
+      <ApplicationViewer
+        application={viewingApplication}
+        onClose={() => setViewingApplication(null)}
+      />
+
       <Footer />
-      {viewingApplication && (
-        <ApplicationViewer
-          isOpen={!!viewingApplication}
-          onClose={() => setViewingApplication(null)}
-          application={viewingApplication}
-        />
-      )}
     </div>
   );
 };
