@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
+import supabase from "@/lib/supabaseClient";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ApplicationForm {
   name: string;
@@ -11,8 +13,6 @@ interface ApplicationForm {
   phone: string;
   position: string;
   coverLetter: string;
-  resumeName?: string;
-  resumeDataUrl?: string;
   // New detailed fields
   address?: string;
   city?: string;
@@ -40,6 +40,7 @@ interface ApplicationForm {
 }
 
 const Careers = () => {
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [form, setForm] = useState<ApplicationForm>({
     name: "",
     email: "",
@@ -80,18 +81,20 @@ const Careers = () => {
     setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  const handleResume = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleResume = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Resume file must be under 5MB.");
+    if (!file) {
+      setResumeFile(null);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setForm((f) => ({ ...f, resumeName: file.name, resumeDataUrl: String(reader.result) }));
-    };
-    reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Resume file must be under 5MB.");
+      setResumeFile(null);
+      e.target.value = ''; // Clear the input
+      return;
+    }
+    setError(null);
+    setResumeFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,14 +108,37 @@ const Careers = () => {
     }
 
     try {
-      const res = await fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Submission failed');
+      if (!supabase) {
+        throw new Error("Database connection not available.");
+      }
+
+      let resume_url: string | undefined = undefined;
+
+      if (resumeFile) {
+        const fileName = `${uuidv4()}-${resumeFile.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('resumes')
+          .upload(fileName, resumeFile);
+
+        if (uploadError) {
+          throw new Error(`Resume upload failed: ${uploadError.message}`);
+        }
+
+        const { data: urlData } = supabase.storage.from('resumes').getPublicUrl(uploadData.path);
+        resume_url = urlData.publicUrl;
+      }
+
+      const { error: insertError } = await supabase.from('applications').insert([{
+        ...form,
+        start_date: form.startDate || null,
+        work_auth: form.workAuth === 'yes',
+        over_18: form.over18 === 'yes',
+        has_transport: form.hasTransport === 'yes',
+        resume_url,
+      }]);
+
+      if (insertError) {
+        throw new Error(`Failed to submit application: ${insertError.message}`);
       }
       setSubmitted(true);
       setForm({
@@ -121,8 +147,6 @@ const Careers = () => {
         phone: "",
         position: "Sales Associate",
         coverLetter: "",
-        resumeName: undefined,
-        resumeDataUrl: undefined,
         address: "",
         city: "",
         state: "",
@@ -334,8 +358,8 @@ const Careers = () => {
             <div>
               <label className="text-sm mb-1 block">Resume (PDF or DOC, up to 5MB)</label>
               <Input type="file" accept=".pdf,.doc,.docx" onChange={handleResume} />
-              {form.resumeName && (
-                <div className="text-xs text-muted-foreground mt-1">Attached: {form.resumeName}</div>
+              {resumeFile && (
+                <div className="text-xs text-muted-foreground mt-1">Attached: {resumeFile.name}</div>
               )}
             </div>
 

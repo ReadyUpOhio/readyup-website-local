@@ -1,6 +1,6 @@
-# GameGrid Emporium
+# Ready Up Gamestore
 
-This is a web application for GameGrid Emporium, a fictional game store. The application provides a public-facing website and an admin portal for managing the store's content and customer interactions.
+This is a web application for Ready Up Gamestore, a fictional game store. The application provides a public-facing website and an admin portal for managing the store's content and customer interactions.
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ To get a local copy up and running, follow these simple steps.
     ```
 2.  **Navigate to the project directory:**
     ```sh
-    cd gamegrid-emporium-main
+    cd ready-up-gamestore
     ```
 3.  **Install NPM packages:**
     ```sh

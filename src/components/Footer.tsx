@@ -84,7 +84,7 @@ const Footer = () => {
               <span className="text-xl font-bold gradient-text-fighter font-orbitron">Ready Up Gamestore</span>
             </div>
             <p className="text-muted-foreground text-sm lg:text-base font-orbitron">
-              &copy; {new Date().getFullYear()} GameGrid Emporium. All Rights Reserved.
+              &copy; {new Date().getFullYear()} Ready Up Gamestore. All Rights Reserved.
               Buy, sell, and trade games, consoles, and TCGs in Ontario, Ohio.
             </p>
           </div>
