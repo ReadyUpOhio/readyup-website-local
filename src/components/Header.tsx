@@ -1,4 +1,4 @@
-import { Menu, X } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -46,8 +46,15 @@ const Header = () => {
             <Link to="/services" className="text-foreground hover:text-space-blue transition-colors text-sm font-bold">SERVICES</Link>
             <Link to="/sell" className="text-foreground hover:text-space-blue transition-colors text-sm font-bold">SELL</Link>
             <Link to="/careers" className="text-foreground hover:text-space-blue transition-colors text-sm font-bold">CAREERS</Link>
+            <Link to="/faq" className="text-foreground hover:text-space-blue transition-colors text-sm font-bold">FAQ</Link>
             <Link to="/blog" className="text-foreground hover:text-space-pink transition-colors text-sm font-bold">BLOG</Link>
           </nav>
+
+          {/* Desktop Phone Number */}
+          <div className="hidden lg:flex items-center space-x-2">
+            <Phone className="w-4 h-4 text-space-cyan" />
+            <a href="tel:4197098325" className="text-foreground hover:text-space-cyan transition-colors text-sm font-bold">(419) 709-8325</a>
+          </div>
 
           {/* Desktop Search removed */}
 
@@ -116,12 +123,27 @@ const Header = () => {
                 CAREERS
               </Link>
               <Link 
+                to="/faq" 
+                className="text-foreground hover:text-space-blue transition-colors text-base font-bold py-2 px-4 rounded-lg hover:bg-white/5"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                FAQ
+              </Link>
+              <Link 
                 to="/blog" 
                 className="text-foreground hover:text-space-pink transition-colors text-base font-bold py-2 px-4 rounded-lg hover:bg-white/5"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 BLOG
               </Link>
+              <a 
+                href="tel:4197098325"
+                className="flex items-center text-foreground hover:text-space-cyan transition-colors text-base font-bold py-2 px-4 rounded-lg hover:bg-white/5"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Phone className="w-4 h-4 mr-3" />
+                (419) 709-8325
+              </a>
               {/* Removed SHOP and ABOUT from mobile menu */}
             </nav>
           </div>

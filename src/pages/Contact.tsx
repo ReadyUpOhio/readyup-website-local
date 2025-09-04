@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import supabase from "@/lib/supabaseClient";
 import { useState } from "react";
 
 interface ContactForm {
@@ -22,6 +23,7 @@ const Contact = () => {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -30,22 +32,29 @@ const Contact = () => {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const item = {
-      id: Date.now(),
+    setLoading(true);
+
+    const payload = {
       name: form.name,
       email: form.email,
       subject: form.subject || (form.type === "repair" ? "Repair Request" : form.type === "consulting" ? "Consulting Request" : "Contact"),
       message: `[${form.type.toUpperCase()}] ${form.message}`,
-      receivedAt: new Date().toISOString(),
+      source: 'contact_form',
     };
-    const raw = localStorage.getItem("contactSubmissions");
-    const arr = raw ? JSON.parse(raw) : [];
-    arr.unshift(item);
-    localStorage.setItem("contactSubmissions", JSON.stringify(arr));
-    setSubmitted(true);
-    setForm({ name: "", email: "", subject: "", type: "repair", message: "" });
+
+    const { error } = await supabase.from('contacts').insert([payload]);
+
+    setLoading(false);
+
+    if (error) {
+      console.error('Error submitting contact form:', error);
+      // You might want to show a user-friendly error message here
+    } else {
+      setSubmitted(true);
+      setForm({ name: "", email: "", subject: "", type: "repair", message: "" });
+    }
   };
 
   return (
@@ -96,8 +105,8 @@ const Contact = () => {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" className="bg-gradient-to-r from-space-blue to-space-cyan font-orbitron">
-                Submit
+              <Button type="submit" disabled={loading} className="bg-gradient-to-r from-space-blue to-space-cyan font-orbitron">
+                {loading ? 'Submitting...' : 'Submit'}
               </Button>
             </div>
 

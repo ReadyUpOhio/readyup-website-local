@@ -1,9 +1,13 @@
+import React from 'react';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Users, Award, Trophy, Shield, Gamepad2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReactGoogleReviews } from "react-google-reviews";
+import "react-google-reviews/dist/index.css";
 
 const About = () => {
+
   const stats = [
     { icon: Users, label: "Active Players", value: "2.5M+" },
     { icon: Award, label: "Games Available", value: "15K+" },
@@ -94,6 +98,42 @@ const About = () => {
           </div>
         </section>
 
+        {/* Location Section */}
+        <section className="py-24 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold font-orbitron mb-6 bg-gradient-to-r from-space-cyan to-space-purple bg-clip-text text-transparent">
+                Find Us in Ontario, Ohio
+              </h2>
+            </div>
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="glass-card p-8 md:p-12 rounded-3xl">
+                <h3 className="text-2xl font-bold font-orbitron mb-4 text-space-cyan">Store Address</h3>
+                <p className="text-lg text-muted-foreground mb-6">
+                  676 Richland Mall, Ontario, OH 44906
+                </p>
+                <h3 className="text-2xl font-bold font-orbitron mb-4 text-space-cyan">Hours</h3>
+                <ul className="text-lg text-muted-foreground space-y-2">
+                  <li><strong>Monday - Saturday:</strong> 11:00 AM - 7:00 PM</li>
+                  <li><strong>Sunday:</strong> 12:00 PM - 5:00 PM</li>
+                </ul>
+              </div>
+              <div className="rounded-3xl overflow-hidden shadow-2xl">
+                <iframe 
+                  src="https://www.google.com/maps/embed/v1/place?key=&q=676+Richland+Mall,Ontario,OH+44906"
+                  width="100%"
+                  height="450"
+                  style={{ border: 0 }}
+                  allowFullScreen={true}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Ready Up Gamestore Location"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Values Section */}
         <section className="py-24 px-4">
           <div className="container mx-auto">
@@ -120,6 +160,29 @@ const About = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Community Reviews Section */}
+        <section className="py-24 px-4 bg-gradient-to-br from-space-blue/5 via-space-purple/5 to-space-cyan/5">
+          <div className="container mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold font-orbitron mb-6 bg-gradient-to-r from-space-blue to-space-purple bg-clip-text text-transparent">
+                What Our Community Says
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Real reviews from fellow gamers and collectors.
+              </p>
+            </div>
+            <div className="max-w-4xl mx-auto">
+              {/* 
+                TODO: Replace the 'featurableId' with your own.
+                1. Create a free account at https://featurable.com
+                2. Create a new widget for your Google Business Profile.
+                3. Copy the Widget ID from the 'Embed > API' section.
+              */}
+              <ReactGoogleReviews layout="carousel" featurableId="example" />
             </div>
           </div>
         </section>

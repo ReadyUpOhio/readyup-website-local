@@ -120,7 +120,8 @@ const Footer = () => {
               <li><a href="/about" className="hover:text-sf2-yellow transition-colors">About Us</a></li>
               <li><a href="https://facebook.com/readyupgamestore" target="_blank" rel="noreferrer noopener" className="hover:text-sf2-yellow transition-colors">Contact</a></li>
               <li><a href="/about" className="hover:text-sf2-yellow transition-colors">Store Hours</a></li>
-              <li><a href="https://maps.google.com/?q=Ontario+Center+Mall,+Ontario,+Ohio" target="_blank" rel="noreferrer noopener" className="hover:text-sf2-yellow transition-colors">Directions</a></li>
+              <li><a href="https://www.google.com/maps?daddr=676+Richland+Mall,+Mansfield,+OH+44906" target="_blank" rel="noreferrer noopener" className="hover:text-sf2-yellow transition-colors">Directions</a></li>
+              <li><a href="tel:4197098325" className="hover:text-sf2-yellow transition-colors">(419) 709-8325</a></li>
             </ul>
           </div>
         </div>

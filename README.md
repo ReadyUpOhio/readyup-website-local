@@ -1,6 +1,6 @@
 # Ready Up Gamestore
 
-This is a web application for Ready Up Gamestore, a fictional game store. The application provides a public-facing website and an admin portal for managing the store's content and customer interactions.
+This is a web application for Ready Up Gamestore, a game store in Ontario, Ohio. The application provides a public-facing website and an admin portal for managing the store's content and customer interactions.
 
 ## Tech Stack
 
