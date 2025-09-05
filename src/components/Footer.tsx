@@ -77,9 +77,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12 lg:mb-16">
           {/* Company */}
           <div className="text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start space-x-2 mb-4 lg:mb-6">
-              <img src="/logos/e6568095-9de9-49a5-a3c9-cfe668a2153d.png" alt="Ready Up Gamestore Logo" className="w-8 h-8" />
-              <span className="text-xl font-bold gradient-text-fighter font-orbitron">Ready Up Gamestore</span>
+            <div className="flex items-center justify-center md:justify-start mb-4 lg:mb-6">
+              <img src="/logos/e6568095-9de9-49a5-a3c9-cfe668a2153d.png" alt="Ready Up Gamestore Logo" className="h-10" />
             </div>
             <p className="text-muted-foreground text-sm lg:text-base font-orbitron">
               &copy; 2023 Ready Up Gamestore. All Rights Reserved.
