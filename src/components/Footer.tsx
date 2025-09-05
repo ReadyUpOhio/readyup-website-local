@@ -1,4 +1,4 @@
-import { Facebook, MessageCircle, Youtube, Mail, Gamepad, Trophy, ExternalLink } from "lucide-react";
+import { Facebook, MessageCircle, Youtube, Mail, Trophy, ExternalLink } from "lucide-react";
 import EbayIcon from "./icons/EbayIcon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,13 +78,11 @@ const Footer = () => {
           {/* Company */}
           <div className="text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start space-x-2 mb-4 lg:mb-6">
-              <div className="w-8 h-8 bg-gradient-to-r from-sf2-blue to-sf2-red rounded-lg flex items-center justify-center arcade-glow">
-                <Gamepad className="w-5 h-5 text-white" />
-              </div>
+              <img src="/logos/e6568095-9de9-49a5-a3c9-cfe668a2153d.png" alt="Ready Up Gamestore Logo" className="w-8 h-8" />
               <span className="text-xl font-bold gradient-text-fighter font-orbitron">Ready Up Gamestore</span>
             </div>
             <p className="text-muted-foreground text-sm lg:text-base font-orbitron">
-              &copy; {new Date().getFullYear()} Ready Up Gamestore. All Rights Reserved.
+              &copy; 2023 Ready Up Gamestore. All Rights Reserved.
               Buy, sell, and trade games, consoles, and TCGs in Ontario, Ohio.
             </p>
           </div>
@@ -131,7 +129,7 @@ const Footer = () => {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
             {/* Copyright */}
             <p className="text-muted-foreground text-center lg:text-left text-sm font-orbitron">
-              &copy; 2024 Ready Up Gamestore. All rights reserved.
+              &copy; 2023 Ready Up Gamestore. All rights reserved.
             </p>
 
             {/* Social Links */}
