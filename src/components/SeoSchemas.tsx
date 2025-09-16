@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet';
 
 const businessName = "Ready Up Gamestore";
-const domain = "https://www.readyupgamestore.com";
+const domain = "https://www.shopreadyup.com";
 const logoUrl = `${domain}/lovable-uploads/e6568095-9de9-49a5-a3c9-cfe668a2153d.png`;
 const telephone = "(419) 709-8325";
 const address = {
