@@ -316,8 +316,14 @@ const Admin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = getSupabase();
-    // Remove id for insert, keep for update
-    const { id, ...postData } = form;
+
+    // Ensure slug exists before saving
+    let submissionData = { ...form };
+    if (!submissionData.slug && submissionData.title) {
+      submissionData.slug = slugify(submissionData.title);
+    }
+
+    const { id, ...postData } = submissionData;
 
     try {
       if (editingId) {
