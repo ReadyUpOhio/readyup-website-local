@@ -23,6 +23,7 @@ interface BlogPost {
   tags?: string[];
   content?: string; // HTML
   status: 'draft' | 'published';
+  slug?: string;
 }
 
 interface LeadItem {
@@ -85,6 +86,7 @@ const Admin = () => {
     tags: [],
     content: "",
     status: 'draft',
+    slug: "",
   });
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -286,11 +288,25 @@ const Admin = () => {
     e.currentTarget.value = "";
   };
 
+  const slugify = (text: string) => {
+    return text
+      .toString()
+      .toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with -
+      .replace(/[^-a-z0-9]+/g, '') // Remove all non-word chars
+      .replace(/--+/g, '-') // Replace multiple - with single -
+      .replace(/^-+/, '') // Trim - from start of text
+      .replace(/-+$/, ''); // Trim - from end of text
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    if (name === "tags") {
+    if (name === 'title') {
+      const slug = slugify(value);
+      setForm(f => ({ ...f, title: value, slug }));
+    } else if (name === "tags") {
       setForm((f) => ({ ...f, tags: value.split(",").map((t) => t.trim()).filter(Boolean) }));
     } else {
       setForm((f) => ({ ...f, [name]: value } as any));

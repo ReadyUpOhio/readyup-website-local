@@ -107,7 +107,7 @@ const BlogPage = () => {
                   </div>
                   
                   <h3 className="text-3xl font-bold font-orbitron mb-4 text-foreground hover:text-space-cyan transition-colors">
-                    <Link to={`/blog/${featuredPost.id}`}>{featuredPost.title}</Link>
+                    <Link to={`/blog/${featuredPost.slug}`}>{featuredPost.title}</Link>
                   </h3>
                   
                   <p className="text-muted-foreground mb-6 leading-relaxed">
@@ -200,7 +200,7 @@ const BlogPage = () => {
                     
                     {/* Title */}
                     <h3 className="text-xl font-bold font-orbitron mb-3 text-foreground group-hover:text-space-cyan transition-colors line-clamp-2">
-                      <Link to={`/blog/${post.id}`}>{post.title}</Link>
+                      <Link to={`/blog/${post.slug}`}>{post.title}</Link>
                     </h3>
                     
                     {/* Excerpt */}
@@ -233,7 +233,7 @@ const BlogPage = () => {
                         </div>
                       </div>
                       
-                      <Link to={`/blog/${post.id}`} className="inline-flex items-center">
+                      <Link to={`/blog/${post.slug}`} className="inline-flex items-center">
                         <Button variant="ghost" size="sm" className="hover:text-space-cyan">
                           Read More
                           <ArrowRight className="w-4 h-4 ml-2" />

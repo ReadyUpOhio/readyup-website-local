@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import getSupabase from "@/lib/supabaseClient";
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 
 interface BlogPost {
   id: number;
@@ -21,10 +22,11 @@ interface BlogPost {
   comments?: number;
   tags?: string[];
   content?: string; // HTML
+  slug?: string;
 }
 
 const BlogDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,13 +34,13 @@ const BlogDetail = () => {
 
   useEffect(() => {
     const loadPost = async () => {
-      if (!id) return;
+      if (!slug) return;
       try {
         const supabase = getSupabase();
         const { data, error } = await supabase
           .from('blogs')
           .select('*')
-          .eq('id', id)
+          .eq('slug', slug)
           .single();
 
         if (error) throw error;
@@ -54,7 +56,7 @@ const BlogDetail = () => {
       }
     };
     loadPost();
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     if (post?.title) {
@@ -93,6 +95,16 @@ const BlogDetail = () => {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>{`${post.title} | Ready Up Game Store`}</title>
+        <meta name="description" content={post.excerpt} />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.excerpt} />
+        <meta property="og:image" content={post.image_url} />
+        <meta property="og:url" content={`https://shopreadyup.com/blog/${post.slug}`} />
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
       <Header />
       <main className="pt-24">
         <section className="py-8 px-4">
