@@ -3,10 +3,10 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
 import { type Session } from "@supabase/supabase-js";
-import supabase from "@/lib/supabaseClient";
+import getSupabase from "@/lib/supabaseClient";
 import { ApplicationViewer, type ApplicationFull } from '@/components/ApplicationViewer';
 
 interface BlogPost {
@@ -59,15 +59,10 @@ interface SubscriberItem {
 
 const Admin = () => {
   const [session, setSession] = useState<Session | null>(null);
-  const [loginEmail, setLoginEmail] = useState<string>("");
-  const [loginPassword, setLoginPassword] = useState<string>("");
-  const [authError, setAuthError] = useState<string>("");
-  const allowedAdmins = useMemo(() => ["readyupgsl@gmail.com"], []);
-  const localMode = !supabase; // when Supabase env is missing, run in local mode
 
   // Load initial session and subscribe to auth state changes
   useEffect(() => {
-    if (!supabase) return; // local mode: skip Supabase auth wiring
+    const supabase = getSupabase();
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => {
@@ -109,7 +104,7 @@ const Admin = () => {
 
   // Reload helpers so actions can refresh current view
   const reloadLeads = useCallback(async () => {
-    if (!supabase) return;
+    const supabase = getSupabase();
     try {
       setLeadError("");
       let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
@@ -125,7 +120,7 @@ const Admin = () => {
   }, [leadFilter]);
 
   const reloadContacts = useCallback(async () => {
-    if (!supabase) return;
+    const supabase = getSupabase();
     try {
       setContactError("");
       let query = supabase.from('contacts').select('*').order('created_at', { ascending: false });
@@ -141,7 +136,7 @@ const Admin = () => {
   }, [contactFilter]);
 
   const reloadApplications = useCallback(async () => {
-    if (!supabase) return;
+    const supabase = getSupabase();
     try {
       setApplicationError("");
       let query = supabase.from('applications').select('*').order('created_at', { ascending: false });
@@ -181,34 +176,33 @@ const Admin = () => {
     setPosts(stored);
 
     // Load data from Supabase
-    if (session || localMode) {
+    if (session) {
       reloadLeads();
       reloadContacts();
       reloadApplications();
     }
 
     // Realtime: subscribe to new leads, contacts, applications
-    if (!localMode && supabase) {
-      const leadChanges = supabase
-        .channel('leads-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => reloadLeads())
-        .subscribe();
-      const contactChanges = supabase
-        .channel('contacts-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'contacts' }, () => reloadContacts())
-        .subscribe();
-      const applicationChanges = supabase
-        .channel('applications-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () => reloadApplications())
-        .subscribe();
+    const supabase = getSupabase();
+    const leadChanges = supabase
+      .channel('leads-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => reloadLeads())
+      .subscribe();
+    const contactChanges = supabase
+      .channel('contacts-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contacts' }, () => reloadContacts())
+      .subscribe();
+    const applicationChanges = supabase
+      .channel('applications-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () => reloadApplications())
+      .subscribe();
 
-      return () => {
+    return () => {
         supabase.removeChannel(leadChanges);
         supabase.removeChannel(contactChanges);
         supabase.removeChannel(applicationChanges);
-      };
-    }
-  }, [session, localMode, leadFilter, contactFilter, applicationFilter, reloadLeads, reloadContacts, reloadApplications]);
+    };
+  }, [session, leadFilter, contactFilter, applicationFilter, reloadLeads, reloadContacts, reloadApplications]);
 
   const updateStatus = async (type: 'leads' | 'contacts' | 'applications', id: number | string, status: 'active' | 'archived') => {
     const entityName = type.slice(0, -1);
@@ -217,7 +211,7 @@ const Admin = () => {
       toast({ title: `Updating ${entityName}...`, description: `#${id}` });
 
       // NEW: Update Supabase directly
-      if (!supabase) throw new Error('Supabase client not available');
+      const supabase = getSupabase();
       const { error } = await supabase.from(type).update({ status }).eq('id', id);
       if (error) throw error;
       
@@ -248,9 +242,8 @@ const Admin = () => {
     document.execCommand('insertText', false, text);
   };
   const contentRef = (node: HTMLDivElement | null) => {
-    if (!node) return;
     // keep innerHTML in sync from state
-    if (node.innerHTML !== (form.content || "")) node.innerHTML = form.content || "";
+    if (node && node.innerHTML !== (form.content || "")) node.innerHTML = form.content || "";
   };
   const onInputContent: React.FormEventHandler<HTMLDivElement> = (e) => {
     const html = (e.target as HTMLDivElement).innerHTML;
@@ -422,83 +415,8 @@ const Admin = () => {
     }
   };
 
-  if (!session && !localMode) {
-    return (
-      <div className="min-h-screen">
-        <Header />
-        <main className="pt-24 pb-16 px-4">
-          <div className="container mx-auto max-w-md">
-            <h1 className="text-4xl font-bold font-orbitron mb-6 bg-gradient-to-r from-space-blue to-space-cyan bg-clip-text text-transparent">Admin Login</h1>
-            <div className="glass-card p-6 rounded-2xl space-y-4">
-              <label className="block text-sm">Email</label>
-              <Input id="email" name="email" type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="you@example.com" />
-              <label className="block text-sm">Password (optional)</label>
-              <Input id="password" name="password" type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="Enter password or use magic link" />
-              {authError ? <p className="text-sm text-red-400">{authError}</p> : null}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <Button
-                  className="bg-gradient-to-r from-space-blue to-space-cyan font-orbitron w-full"
-                  onClick={async () => {
-                    setAuthError("");
-                    if (!loginEmail) return setAuthError("Please enter your email.");
-                    if (!supabase) return setAuthError('Supabase not configured');
-                    const { error } = await supabase.auth.signInWithOtp({
-                      email: loginEmail,
-                      options: { emailRedirectTo: window.location.origin + "/admin" },
-                    });
-                    if (error) setAuthError(error.message);
-                    else alert("Magic link sent. Check your email.");
-                  }}
-                >
-                  Send Magic Link
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    setAuthError("");
-                    if (!loginEmail || !loginPassword) return setAuthError("Enter email and password.");
-                    if (!supabase) return setAuthError("Supabase is not configured.");
-                    const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
-                    if (error) {
-                      setAuthError(error.message);
-                    } else {
-                      // Ensure immediate UI update even before onAuthStateChange fires
-                      setSession(data.session);
-                    }
-                  }}
-                >
-                  Sign In
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">We’ll email you a sign-in link, or you can sign in with email + password if enabled.</p>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
-  // Admin email gating
   const userEmail = session?.user?.email || "local@admin";
-  const isAdmin = localMode ? true : allowedAdmins.includes(userEmail);
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen">
-        <Header />
-        <main className="pt-24 pb-16 px-4">
-          <div className="container mx-auto max-w-md">
-            <h1 className="text-4xl font-bold font-orbitron mb-6 bg-gradient-to-r from-space-blue to-space-cyan bg-clip-text text-transparent">Not Authorized</h1>
-            <div className="glass-card p-6 rounded-2xl space-y-4">
-              <p className="text-sm">Signed in as {userEmail}. This account is not authorized for admin access.</p>
-              <Button variant="outline" onClick={() => (!localMode ? supabase?.auth.signOut() : null)}>Sign Out</Button>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">
@@ -510,7 +428,7 @@ const Admin = () => {
             <p className="text-muted-foreground">Manage blog posts, leads, contacts, and applications.</p>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{userEmail}</span>
-              <Button variant="outline" size="sm" onClick={() => supabase?.auth.signOut()}>Sign Out</Button>
+              <Button variant="outline" size="sm" onClick={() => getSupabase().auth.signOut()}>Sign Out</Button>
             </div>
           </div>
 

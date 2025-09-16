@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Camera, DollarSign, MessageCircle, X } from "lucide-react";
-import supabase from '@/lib/supabaseClient'; // Import Supabase client
+import getSupabase from '@/lib/supabaseClient';
 
 const SellPage = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -70,12 +70,13 @@ const SellPage = () => {
         collection_type: formData.collectionType,
         description: formData.description,
         estimated_value: formData.estimatedValue || null,
-        images_json: JSON.stringify((uploadedImages || []).slice(0, 6)), // Store images as JSON string
+        images: JSON.stringify((uploadedImages || []).slice(0, 6)), // Store images as JSON string
         source: 'sell_form',
       };
 
-      // NEW: Insert into Supabase 'leads' table
-      const { error } = await supabase.from('leads').insert([payload]);
+      // NEW: Initialize Supabase client before use
+      const supabase = getSupabase();
+      const { data, error } = await supabase.from('leads').insert(payload);
       if (error) throw error;
 
       setSubmitMessage({ type: 'success', text: 'Thank you! Your request was submitted. We\'ll contact you within 24 hours with an offer.' });
@@ -224,7 +225,7 @@ const SellPage = () => {
                         name="collectionType"
                         value={formData.collectionType}
                         onChange={handleInputChange}
-                        className="w-full p-3 bg-white text-black border border-white/20 rounded-xl focus:border-ready-cyan focus:outline-none"
+                        className="w-full p-3 bg-background border border-border rounded-xl focus:border-primary focus:outline-none"
                         required
                       >
                         <option value="">What are you selling?</option>

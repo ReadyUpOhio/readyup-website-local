@@ -90,6 +90,7 @@
     background: var(--gradient-space);
     min-height: 100vh;
     position: relative;
+    color-scheme: dark;
   }
 
   body::before {

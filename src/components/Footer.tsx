@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import getSupabase from '@/lib/supabaseClient';
 
 const Footer = () => {
   const { toast } = useToast();
@@ -20,21 +21,26 @@ const Footer = () => {
     }
 
     try {
-      const response = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const result = await response.json();
-      if (response.ok) {
-        toast({
-          title: result.isNew ? "Subscribed!" : "Already Subscribed",
-          description: result.message || "You're on the list for updates.",
-        });
-        setEmail('');
-      } else {
-        throw new Error(result.message || 'An error occurred.');
+      const supabase = getSupabase();
+      const { error } = await supabase
+        .from('subscribers')
+        .insert({ email });
+
+      if (error && error.code !== '23505') { // 23505 is unique_violation, ignore if email exists
+        throw error;
       }
+
+      const isNew = !error;
+
+      toast({
+        title: isNew ? "Subscribed!" : "Already Subscribed",
+        description: isNew ? "You're on the list for updates." : "This email is already on our list.",
+      });
+
+      if (isNew) {
+        setEmail('');
+      }
+
     } catch (error) {
       toast({
         title: "Subscription Failed",

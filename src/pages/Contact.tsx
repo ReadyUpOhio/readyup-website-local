@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import supabase from "@/lib/supabaseClient";
+import getSupabase from '@/lib/supabaseClient';
 import { useState } from "react";
 
 interface ContactForm {
@@ -44,7 +44,8 @@ const Contact = () => {
       source: 'contact_form',
     };
 
-    const { error } = await supabase.from('contacts').insert([payload]);
+    const supabase = getSupabase();
+    const { data, error } = await supabase.from('contacts').insert([payload]);
 
     setLoading(false);
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import supabase from "@/lib/supabaseClient";
+import getSupabase from '@/lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ApplicationForm {
@@ -73,6 +73,7 @@ const Careers = () => {
   });
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -107,11 +108,10 @@ const Careers = () => {
       return;
     }
 
-    try {
-      if (!supabase) {
-        throw new Error("Database connection not available.");
-      }
+    setLoading(true);
 
+    try {
+      const supabase = getSupabase();
       let resume_url: string | undefined = undefined;
 
       if (resumeFile) {
@@ -128,19 +128,46 @@ const Careers = () => {
         resume_url = urlData.publicUrl;
       }
 
-      const { error: insertError } = await supabase.from('applications').insert([{
-        ...form,
+      const payload = {
+        full_name: form.name,
+        email: form.email,
+        phone: form.phone,
+        position: form.position,
+        cover_letter: form.coverLetter,
+        address: form.address,
+        city: form.city,
+        state: form.state,
+        zip: form.zip,
         start_date: form.startDate || null,
+        desired_pay: form.desiredPay,
+        availability_type: form.availabilityType,
+        hours_per_week: form.hoursPerWeek,
         work_auth: form.workAuth === 'yes',
         over_18: form.over18 === 'yes',
         has_transport: form.hasTransport === 'yes',
+        website: form.website,
+        linkedin: form.linkedin,
+        github: form.github,
+        portfolio: form.portfolio,
+        experience_summary: form.experienceSummary,
+        last_employer: form.lastEmployer,
+        last_title: form.lastTitle,
+        last_employment_dates: form.lastEmploymentDates,
+        reference_name: form.referenceName,
+        reference_phone: form.referencePhone,
+        availability_notes: form.availabilityNotes,
+        consent: form.consent,
         resume_url,
-      }]);
+      };
+
+      const { error: insertError } = await supabase.from('applications').insert([payload]);
 
       if (insertError) {
-        throw new Error(`Failed to submit application: ${insertError.message}`);
+        throw new Error(`Application submission failed: ${insertError.message}`);
       }
+
       setSubmitted(true);
+      // Reset form to initial state
       setForm({
         name: "",
         email: "",
@@ -171,8 +198,12 @@ const Careers = () => {
         availabilityNotes: "",
         consent: false,
       });
+      setResumeFile(null);
+
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 

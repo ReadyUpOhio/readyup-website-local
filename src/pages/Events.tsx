@@ -30,7 +30,7 @@ const events = [
 
 const EventCard = ({ event }: { event: typeof events[number] }) => {
   const content = (
-    <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg overflow-hidden h-full flex flex-col md:flex-row">
+    <div className="bg-card/80 backdrop-blur-xl rounded-2xl border border-border shadow-lg overflow-hidden h-full flex flex-col md:flex-row">
       <img src={event.imageUrl} alt={event.title} className="w-full md:w-1/3 h-48 md:h-auto object-cover" />
       <div className="p-6 flex-grow flex flex-col">
         <h3 className="text-2xl font-bold font-display mb-2">{event.title}</h3>
@@ -41,13 +41,13 @@ const EventCard = ({ event }: { event: typeof events[number] }) => {
         <p className="text-muted-foreground mb-4 flex-grow">{event.description}</p>
         <div className="flex flex-wrap gap-2 mb-6">
           {event.badges.map((badge, i) => (
-            <span key={i} className="bg-blue-500/20 text-blue-300 text-xs font-medium px-2.5 py-1 rounded-full">
+            <span key={i} className="bg-primary/20 text-primary-foreground text-xs font-medium px-2.5 py-1 rounded-full">
               {badge}
             </span>
           ))}
         </div>
         {event.ctaUrl && event.ctaLabel ? (
-          <Button size="lg" className="mt-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold self-start">
+          <Button size="lg" className="fighter-button mt-auto font-semibold self-start">
             <ExternalLink className="w-4 h-4 mr-2" />
             {event.ctaLabel}
           </Button>

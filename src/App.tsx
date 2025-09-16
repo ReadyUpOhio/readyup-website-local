@@ -12,6 +12,8 @@ import BlogDetail from "./pages/BlogDetail";
 import NotFound from "./pages/NotFound";
 import Contact from "./pages/Contact";
 import Careers from "./pages/Careers";
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 const Admin = lazy(() => import("./pages/Admin"));
 import Sell from "./pages/Sell";
 import Events from "./pages/Events";
@@ -39,7 +41,17 @@ const App = () => (
             <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/careers" element={<Careers />} />
-            <Route path="/admin" element={<Suspense fallback={<div>Loading...</div>}><Admin /></Suspense>} />
+            <Route path="/login" element={<Login />} />
+            <Route 
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <Admin />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
             <Route path="/sell" element={<Sell />} />
             <Route path="/events" element={<Events />} />
             <Route path="/services" element={<Services />} />

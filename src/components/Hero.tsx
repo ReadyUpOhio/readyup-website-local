@@ -50,7 +50,7 @@ const Hero = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 text-base sm:text-lg px-8 py-4 font-semibold min-h-[52px] w-full sm:w-auto rounded-2xl transition-all duration-300 hover:scale-105 backdrop-blur-xl shadow-lg"
+              className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 text-base sm:text-lg px-8 py-4 font-semibold min-h-[52px] w-full sm:w-auto rounded-2xl transition-all duration-300 hover:scale-105 backdrop-blur-xl shadow-lg animate-bounce-slow"
               onClick={() => window.open('https://www.ebay.com/str/pixlearc?_pgn=5&rt=nc&_tab=shop', '_blank')}
             >
               SHOP
