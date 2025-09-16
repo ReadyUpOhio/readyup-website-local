@@ -92,7 +92,7 @@ const SellPage = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-24 pb-16">
         <section id="sell" className="py-8 md:py-12 px-4 bg-gradient-to-b from-transparent to-black/20">
