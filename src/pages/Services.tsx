@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 const Services = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-24 md:pt-32 pb-16">
         <div className="container mx-auto px-4 lg:px-6">

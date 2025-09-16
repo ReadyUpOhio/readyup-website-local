@@ -51,7 +51,7 @@ const BlogPage = () => {
   const featuredPost = posts[0];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       
       <main className="pt-20">

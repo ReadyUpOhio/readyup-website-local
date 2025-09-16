@@ -208,7 +208,7 @@ const Careers = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-3xl">
