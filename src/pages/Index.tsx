@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import YouTubePlayer from "@/components/YouTubePlayer";
 import PhotoUpload from "@/components/PhotoUpload";
 import CollectionSellSummary from "@/components/CollectionSell";
 import Testimonials from "@/components/Testimonials";
@@ -26,6 +27,7 @@ const Index = () => {
       <Header />
       <main>
         <Hero />
+        <YouTubePlayer videoId="V04aaQwKaWM" />
         <PhotoUpload />
         <SocialMedia />
         <FacebookGroupPromo />
