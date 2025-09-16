@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import getSupabase from "@/lib/supabaseClient";
 
 const BlogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -16,14 +17,15 @@ const BlogPage = () => {
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        const res = await fetch("/blogs.json", { cache: "no-store" });
-        const seed = await res.json();
-        const storedRaw = localStorage.getItem("adminBlogs");
-        const stored = storedRaw ? JSON.parse(storedRaw) : [];
-        const merged = [...seed, ...stored].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        setPosts(merged);
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .eq('status', 'published')
+          .order('date', { ascending: false });
+
+        if (error) throw error;
+        setPosts(data || []);
       } catch (e: any) {
         setError("Failed to load blog posts.");
       } finally {
@@ -85,9 +87,13 @@ const BlogPage = () => {
               <div className="md:flex">
                 {/* Featured Image */}
                 <div className="md:w-1/2">
-                  <div className="aspect-[16/10] bg-gradient-to-br from-space-purple/20 to-space-blue/20 flex items-center justify-center">
-                    <div className="text-6xl opacity-50">📝</div>
-                  </div>
+                  {featuredPost.image_url ? (
+                    <img src={featuredPost.image_url} alt={featuredPost.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="aspect-[16/10] bg-gradient-to-br from-space-purple/20 to-space-blue/20 flex items-center justify-center">
+                      <div className="text-6xl opacity-50">📝</div>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Content */}
@@ -120,7 +126,7 @@ const BlogPage = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      {featuredPost.readTime}
+                      {featuredPost.read_time}
                     </div>
                     <div className="flex items-center gap-2">
                       <Eye className="w-4 h-4" />
@@ -175,7 +181,11 @@ const BlogPage = () => {
                 <article key={post.id} className="glass-card rounded-3xl overflow-hidden hover:scale-105 transition-all duration-300 group">
                   {/* Post Image */}
                   <div className="aspect-[16/10] bg-gradient-to-br from-space-purple/20 to-space-blue/20 flex items-center justify-center">
-                    <div className="text-4xl opacity-50">📝</div>
+                    {post.image_url ? (
+                      <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-4xl opacity-50">📝</div>
+                    )}
                   </div>
                   
                   {/* Content */}
@@ -206,7 +216,7 @@ const BlogPage = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        {post.readTime}
+                        {post.read_time}
                       </div>
                     </div>
                     

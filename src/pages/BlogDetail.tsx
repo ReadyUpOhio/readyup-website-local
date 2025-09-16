@@ -1,10 +1,12 @@
+import { useParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useEffect, useState } from "react";
+import { Calendar, User, Clock, Eye, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, Clock, ArrowLeft } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import getSupabase from "@/lib/supabaseClient";
+import { Link, useNavigate } from "react-router-dom";
 
 interface BlogPost {
   id: number;
@@ -12,9 +14,9 @@ interface BlogPost {
   excerpt: string;
   author: string;
   date: string;
-  readTime: string;
+  read_time: string;
   category: string;
-  image?: string;
+  image_url?: string;
   views?: number;
   comments?: number;
   tags?: string[];
@@ -24,34 +26,35 @@ interface BlogPost {
 const BlogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadPosts = async () => {
+    const loadPost = async () => {
+      if (!id) return;
       try {
-        const res = await fetch("/blogs.json", { cache: "no-store" });
-        const seed = await res.json();
-        const storedRaw = localStorage.getItem("adminBlogs");
-        const stored = storedRaw ? JSON.parse(storedRaw) : [];
-        const merged: BlogPost[] = [...seed, ...stored].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        setPosts(merged);
-      } catch (e) {
-        setError("Failed to load blog posts.");
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setPost(data);
+        } else {
+          setError("Post not found.");
+        }
+      } catch (e: any) {
+        setError("Failed to load post.");
       } finally {
         setLoading(false);
       }
     };
-    loadPosts();
-  }, []);
-
-  const post = useMemo(() => {
-    const pid = Number(id);
-    return posts.find((p) => p.id === pid) || null;
-  }, [id, posts]);
+    loadPost();
+  }, [id]);
 
   useEffect(() => {
     if (post?.title) {
@@ -121,13 +124,13 @@ const BlogDetail = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                {post.readTime}
+                {post.read_time}
               </div>
             </div>
 
-            {post.image ? (
+            {post.image_url ? (
               <div className="rounded-2xl overflow-hidden border border-white/10 mb-8">
-                <img src={post.image} alt="Hero" className="w-full max-h-[480px] object-cover" />
+                <img src={post.image_url} alt={post.title} className="w-full max-h-[480px] object-cover" />
               </div>
             ) : null}
 

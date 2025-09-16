@@ -15,13 +15,14 @@ interface BlogPost {
   excerpt: string;
   author: string;
   date: string; // ISO string
-  readTime: string;
+  read_time: string;
   category: string;
-  image?: string;
+  image_url?: string;
   views?: number;
   comments?: number;
   tags?: string[];
   content?: string; // HTML
+  status: 'draft' | 'published';
 }
 
 interface LeadItem {
@@ -72,19 +73,18 @@ const Admin = () => {
 
   // Legacy local password gate removed in favor of Supabase Auth
 
-  const [form, setForm] = useState<BlogPost>({
-    id: Date.now(),
+  const [form, setForm] = useState<Partial<BlogPost>>({
+    id: undefined,
     title: "",
     excerpt: "",
     author: "",
     date: new Date().toISOString().slice(0, 10),
-    readTime: "5 min",
+    read_time: "5 min",
     category: "news",
-    image: "",
-    views: 0,
-    comments: 0,
+    image_url: "",
     tags: [],
     content: "",
+    status: 'draft',
   });
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -99,6 +99,17 @@ const Admin = () => {
   const [applicationFilter, setApplicationFilter] = useState<'active' | 'archived' | 'all'>('active');
   const [applicationError, setApplicationError] = useState<string>("");
   const [viewingApplication, setViewingApplication] = useState<ApplicationItem | null>(null);
+
+  const reloadPosts = useCallback(async () => {
+    const supabase = getSupabase();
+    try {
+      const { data, error } = await supabase.from('blogs').select('*').order('date', { ascending: false });
+      if (error) throw error;
+      setPosts(data as BlogPost[]);
+    } catch (e: any) {
+      toast({ title: 'Failed to load posts', description: e.message });
+    }
+  }, []);
   // const [subscribers, setSubscribers] = useState<SubscriberItem[]>([]);
   // const [subscriberError, setSubscriberError] = useState<string>("");
 
@@ -171,12 +182,10 @@ const Admin = () => {
   // }, []);
 
   useEffect(() => {
-    const storedRaw = localStorage.getItem("adminBlogs");
-    const stored = storedRaw ? JSON.parse(storedRaw) : [];
-    setPosts(stored);
 
     // Load data from Supabase
     if (session) {
+      reloadPosts();
       reloadLeads();
       reloadContacts();
       reloadApplications();
@@ -194,13 +203,19 @@ const Admin = () => {
       .subscribe();
     const applicationChanges = supabase
       .channel('applications-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, () => reloadApplications())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, reloadApplications)
+      .subscribe();
+
+    const blogChanges = supabase
+      .channel('blogs-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blogs' }, reloadPosts)
       .subscribe();
 
     return () => {
         supabase.removeChannel(leadChanges);
         supabase.removeChannel(contactChanges);
         supabase.removeChannel(applicationChanges);
+        supabase.removeChannel(blogChanges);
     };
   }, [session, leadFilter, contactFilter, applicationFilter, reloadLeads, reloadContacts, reloadApplications]);
 
@@ -272,7 +287,7 @@ const Admin = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     if (name === "tags") {
@@ -282,47 +297,40 @@ const Admin = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      // update existing
-      const next = posts.map((p) => (p.id === editingId ? { ...p, ...form, id: editingId } : p));
-      setPosts(next);
-      localStorage.setItem("adminBlogs", JSON.stringify(next));
-      setEditingId(null);
-    } else {
-      // create new
-      const newPost: BlogPost = {
-        ...form,
-        id: Date.now(),
-        views: form.views ?? 0,
-        comments: form.comments ?? 0,
-        image: form.image || "/api/placeholder/600/400",
-      };
-      const next = [newPost, ...posts];
-      setPosts(next);
-      localStorage.setItem("adminBlogs", JSON.stringify(next));
+    const supabase = getSupabase();
+    // Remove id for insert, keep for update
+    const { id, ...postData } = form;
+
+    try {
+      if (editingId) {
+        const { error } = await supabase.from('blogs').update(postData).eq('id', editingId);
+        if (error) throw error;
+        toast({ title: "Post updated successfully!" });
+      } else {
+        const { error } = await supabase.from('blogs').insert(postData);
+        if (error) throw error;
+        toast({ title: "Post created successfully!" });
+      }
+      reloadPosts();
+      cancelEdit();
+    } catch (e: any) {
+      toast({ title: "Error saving post", description: e.message });
     }
-    setForm({
-      id: Date.now(),
-      title: "",
-      excerpt: "",
-      author: "",
-      date: new Date().toISOString().slice(0, 10),
-      readTime: "5 min",
-      category: "news",
-      image: "",
-      views: 0,
-      comments: 0,
-      tags: [],
-      content: "",
-    });
   };
 
-  const removePost = (id: number) => {
-    const next = posts.filter((p) => p.id !== id);
-    setPosts(next);
-    localStorage.setItem("adminBlogs", JSON.stringify(next));
+  const removePost = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    const supabase = getSupabase();
+    try {
+      const { error } = await supabase.from('blogs').delete().eq('id', id);
+      if (error) throw error;
+      toast({ title: "Post deleted" });
+      reloadPosts();
+    } catch (e: any) {
+      toast({ title: "Error deleting post", description: e.message });
+    }
   };
 
   const editPost = (post: BlogPost) => {
@@ -339,17 +347,17 @@ const Admin = () => {
   const cancelEdit = () => {
     setEditingId(null);
     setForm({
-      id: Date.now(),
+      id: undefined,
       title: "",
       excerpt: "",
       author: "",
       date: new Date().toISOString().slice(0, 10),
-      readTime: "5 min",
+      read_time: "5 min",
       category: "news",
-      image: "",
-      views: 0,
-      comments: 0,
+      image_url: "",
       tags: [],
+      content: "",
+      status: 'draft',
     });
   };
 
@@ -357,7 +365,7 @@ const Admin = () => {
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      setForm((f) => ({ ...f, image: dataUrl }));
+      setForm((f) => ({ ...f, image_url: dataUrl }));
     };
     reader.readAsDataURL(file);
   };
@@ -394,13 +402,14 @@ const Admin = () => {
         excerpt: p.excerpt || "",
         author: p.author || "",
         date: p.date || new Date().toISOString().slice(0,10),
-        readTime: p.readTime || "5 min",
+        read_time: p.read_time || "5 min",
         category: p.category || "news",
-        image: p.image || "",
+        image_url: p.image_url || "",
         views: typeof p.views === "number" ? p.views : 0,
         comments: typeof p.comments === "number" ? p.comments : 0,
         tags: Array.isArray(p.tags) ? p.tags : [],
         content: typeof p.content === "string" ? p.content : "",
+        status: p.status === 'published' ? 'published' : 'draft',
       }));
       const map = new Map<number, BlogPost>();
       [...posts, ...incoming].forEach((p) => map.set(p.id, p));
@@ -464,16 +473,16 @@ const Admin = () => {
                     <Input id="date" type="date" name="date" value={form.date} onChange={handleChange} required />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1" htmlFor="readTime">Read Time</label>
-                    <Input id="readTime" name="readTime" value={form.readTime} onChange={handleChange} />
+                    <label className="block text-sm mb-1" htmlFor="read_time">Read Time</label>
+                    <Input id="read_time" name="read_time" value={form.read_time} onChange={handleChange} />
                   </div>
                   <div>
                     <label className="block text-sm mb-1" htmlFor="category">Category</label>
                     <Input id="category" name="category" value={form.category} onChange={handleChange} />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1" htmlFor="image">Image URL</label>
-                    <Input id="image" name="image" value={form.image} onChange={handleChange} placeholder="/api/placeholder/600/400" />
+                    <label className="block text-sm mb-1" htmlFor="image_url">Image URL</label>
+                    <Input id="image_url" name="image_url" value={form.image_url} onChange={handleChange} placeholder="https://..." />
                   </div>
                   <div>
                     <label className="block text-sm mb-1" htmlFor="upload-image">Upload Image</label>
@@ -483,12 +492,19 @@ const Admin = () => {
                     <label className="block text-sm mb-1" htmlFor="tags">Tags (comma-separated)</label>
                     <Input id="tags" name="tags" value={(form.tags || []).join(", ")} onChange={handleChange} />
                   </div>
+                  <div>
+                    <label className="block text-sm mb-1" htmlFor="status">Status</label>
+                    <select id="status" name="status" value={form.status} onChange={handleChange} className="w-full p-2 bg-background border border-border rounded-md">
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
                 </div>
-                {form.image ? (
+                {form.image_url ? (
                   <div className="rounded-xl overflow-hidden border border-white/10">
-                    <img src={form.image} alt="Preview" className="w-full max-h-64 object-cover cursor-pointer" onClick={() => setPreviewImage(form.image)} />
+                    <img src={form.image_url} alt="Preview" className="w-full max-h-64 object-cover cursor-pointer" onClick={() => setPreviewImage(form.image_url)} />
                     <div className="p-2 flex gap-2 justify-end">
-                      <Button type="button" variant="outline" onClick={() => setForm((f) => ({ ...f, image: "" }))}>Remove Image</Button>
+                      <Button type="button" variant="outline" onClick={() => setForm((f) => ({ ...f, image_url: "" }))}>Remove Image</Button>
                     </div>
                   </div>
                 ) : null}
@@ -553,7 +569,7 @@ const Admin = () => {
                       <li key={p.id} className="glass-card p-4 rounded-xl flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                           <div className="w-16 h-12 rounded-md overflow-hidden bg-white/5 border border-white/10">
-                            {p.image ? <img src={p.image} alt="thumb" className="w-full h-full object-cover" /> : null}
+                            {p.image_url ? <img src={p.image_url} alt="thumb" className="w-full h-full object-cover" /> : null}
                           </div>
                           <div>
                             <div className="font-semibold">{p.title}</div>

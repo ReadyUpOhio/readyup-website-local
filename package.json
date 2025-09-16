@@ -63,6 +63,8 @@
     "react-youtube": "^10.1.0",
     "recharts": "^2.15.4",
     "sonner": "^1.7.4",
+    "suneditor": "^2.47.8",
+    "suneditor-react": "^3.6.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
