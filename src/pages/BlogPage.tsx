@@ -134,7 +134,7 @@ const BlogPage = () => {
                     </div>
                   </div>
                   
-                  <Link to={`/blog/${featuredPost.id}`}>
+                  <Link to={`/blog/${featuredPost.slug}`}>
                     <Button className="bg-gradient-to-r from-space-blue to-space-cyan font-orbitron">
                       Read Full Article
                       <ArrowRight className="w-4 h-4 ml-2" />

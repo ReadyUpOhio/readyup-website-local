@@ -94,7 +94,7 @@ const BlogDetail = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>{`${post.title} | Ready Up Game Store`}</title>
         <meta name="description" content={post.excerpt} />
