@@ -10,6 +10,7 @@ import SellSection from "@/components/SellSection";
 import SocialMedia from "@/components/SocialMedia";
 import Footer from "@/components/Footer";
 import FacebookGroupPromo from "@/components/FacebookGroupPromo";
+import BlogHighlight from '@/components/BlogHighlight';
 
 const Index = () => {
   useEffect(() => {
@@ -35,6 +36,8 @@ const Index = () => {
         <CollectionSellSummary />
         <ContactUs />
         <Testimonials />
+        <ContactUs />
+        <BlogHighlight />
       </main>
       <Footer />
     </div>
