@@ -84,7 +84,13 @@ const SeoSchemas = () => {
     "logo": logoUrl,
     "image": logoUrl,
     "telephone": telephone,
-    "description": "Buy, sell, and trade video games, trading cards, and collectibles in Ontario, Ohio (near Mansfield). Retro Nintendo & Sega, Pokémon, Yu-Gi-Oh!, Funko Pops, and more.",
+    "description": "The best place to buy, sell, and trade video games and trading cards in Ohio, including Marion, Mansfield, and all of Central Ohio. We specialize in retro Nintendo & Sega, Pokémon, Yu-Gi-Oh!, Funko Pops, and more.",
+    "areaServed": [
+      "Ohio",
+      "Marion",
+      "Mansfield",
+      "Central Ohio"
+    ],
     "address": {
       "@type": "PostalAddress",
       ...address

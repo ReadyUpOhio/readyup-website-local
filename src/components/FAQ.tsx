@@ -49,6 +49,10 @@ export const faqSections = [
         question: 'Can I request a specific game if you don\'t have it in stock?',
         answer: 'Yes! We can add it to our wishlist and notify you if we get a copy in stock. We\'re always on the hunt for rare and popular titles.',
       },
+      {
+        question: 'Where is the best place to sell video games in Ohio?',
+        answer: 'Ready Up Game Store! We give fair offers on items, paying up to 80%+ on certain items. We will match or beat any competitor\'s offer if it is an item we are interested in.',
+      },
     ],
   },
   {
